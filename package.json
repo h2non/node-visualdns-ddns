@@ -1,6 +1,6 @@
 {
   "name": "visual-ddns",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "VisualDNS.net DDNS node.js client. Update NS entries based on your public IP",
   "preferGlobal": true,
   "engineStrict": true,
