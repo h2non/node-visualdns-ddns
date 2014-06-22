@@ -38,7 +38,7 @@ function getIP(cb) {
     .timeout(20000)
     .end(function (err, res) {
       if (err) {
-        throw new Error('Cannot get the public IP')
+        echo(new Date() + ' [ERROR] Cannot get the public IP')
       } else {
         cb(extractIP(res.text))
       }
@@ -48,7 +48,7 @@ function getIP(cb) {
 function handler(cb) {
   return function (res) {
     if (res.error) {
-      throw new Error('cannot perform the request: ' + res.error.message)
+      echo(new Date() + ' [ERROR] Cannot perform the request: ' + res.error.message)
     } else {
       cb(res.body)
     }
@@ -72,7 +72,6 @@ function put(path, query, cb) {
     .end(handler(cb))
 }
 
-
 function getDomains(cb) {
   get('/domains', cb)
 }
@@ -88,7 +87,7 @@ function updateRecord(domain) {
     'record[content]': domain.ip,
     'record[ttl]': domain.TTL || 3600
   }, function () {
-    echo('Record for domain "' + domain.name + '" updated successfully with IP ' + domain.ip)
+    echo(new Date() + ' [SUCCESS] Record for domain "' + domain.name + '" updated successfully with IP ' + domain.ip)
   })
 }
 
