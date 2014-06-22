@@ -1,0 +1,138 @@
+#!/usr/bin/env node
+
+var fs = require('fs')
+var request = require('superagent')
+var argv = require('yargs')
+    .usage('Update DNS A entries with the current public IP\nUsage: $0')
+    .example('$0 -f', 'count the lines in the given file')
+    .demand('c')
+    .alias('c', 'config')
+    .describe('c', 'Path to config file')
+    .argv
+
+var config
+var api = 'https://visualdns.net/api/v1'
+var checkIP = 'http://checkip.dyndns.org'
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0
+
+function echo() {
+  console.log.apply(null, arguments)
+}
+
+function extend(target, input) {
+  for (var i in input) {
+    if (input.hasOwnProperty(i)) {
+      target[i] = input[i]
+    }
+  }
+  return target
+}
+
+function getIP(cb) {
+  function extractIP(body) {
+    return body.split(':')[1].split('<')[0].trim()
+  }
+
+  request.get(checkIP)
+    .timeout(20000)
+    .end(function (err, res) {
+      if (err) {
+        throw new Error('Cannot get the public IP')
+      } else {
+        cb(extractIP(res.text))
+      }
+    })
+}
+
+function handler(cb) {
+  return function (res) {
+    if (res.error) {
+      throw new Error('cannot perform the request: ' + res.error.message)
+    } else {
+      cb(res.body)
+    }
+  }
+}
+
+function get(path, cb) {
+  request
+    .get(api + path)
+    .query({ auth_token: config.token })
+    .timeout(10000)
+    .end(handler(cb))
+}
+
+function put(path, query, cb) {
+  request
+    .put(api + path)
+    .query(extend({ auth_token: config.token }, query))
+    .set('Content-Length', '0')
+    .timeout(10000)
+    .end(handler(cb))
+}
+
+
+function getDomains(cb) {
+  get('/domains', cb)
+}
+
+function getRecords(id, cb) {
+  get('/domains/' + id + '/records', cb)
+}
+
+function updateRecord(domain) {
+  put('/domains/' + domain.id + '/records/' + domain.recordId, {
+    'record[name]': domain.name,
+    'record[type]': domain.type || 'A',
+    'record[content]': domain.ip,
+    'record[ttl]': domain.TTL || 3600
+  }, function () {
+    echo('Record for domain "' + domain.name + '" updated successfully with IP ' + domain.ip)
+  })
+}
+
+function findDomain(name) {
+  return config.domains.filter(function (domain) {
+    return new RegExp(domain.name, 'i').test(name)
+  })
+}
+
+function findRecord(records, domain) {
+  return records.filter(function (record) {
+    return record.name === domain.name && record.type === (domain.type || 'A')
+  })
+}
+
+if (!fs.existsSync(argv.config)) {
+  throw new Error('Missing configuration file')
+}
+
+try {
+  config = JSON.parse(fs.readFileSync(argv.config))
+} catch (e) {
+  throw new Error('Error while parsing the config JSON file:', e.message)
+}
+
+getDomains(function (body) {
+  getIP(function (ip) {
+    body.map(function (domain) {
+      return { name: domain.name, id: domain.id, ip: ip }
+    }).map(function (domain) {
+      var data = findDomain(domain.name)
+      if (data.length) {
+        return extend(data[0], domain)
+      }
+    }).filter(function (domain) {
+      return domain
+    }).forEach(function (domain) {
+      getRecords(domain.id, function (records) {
+        var record = findRecord(records, domain)
+        if (record.length) {
+          domain.recordId = record[0].id
+          updateRecord(domain)
+        }
+      })
+    })
+  })
+})
+

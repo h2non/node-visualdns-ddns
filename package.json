@@ -1,0 +1,8 @@
+{
+  "name": "visual-ddns",
+  "version": "0.1.0",
+  "dependencies": {
+    "superagent": "~0.18.0",
+    "yargs": "~1.2.5"
+  }
+}
