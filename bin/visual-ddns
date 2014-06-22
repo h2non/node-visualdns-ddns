@@ -12,6 +12,7 @@ var argv = require('yargs')
     .argv
 
 var config
+var timeout = 30 * 1000
 var api = 'https://visualdns.net/api/v1'
 var checkIP = 'http://checkip.dyndns.org'
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0
@@ -35,7 +36,7 @@ function getIP(cb) {
   }
 
   request.get(checkIP)
-    .timeout(20000)
+    .timeout(timeout)
     .end(function (err, res) {
       if (err) {
         echo(new Date() + ' [ERROR] Cannot get the public IP')
@@ -59,7 +60,7 @@ function get(path, cb) {
   request
     .get(api + path)
     .query({ auth_token: config.token })
-    .timeout(10000)
+    .timeout(timeout)
     .end(handler(cb))
 }
 
@@ -68,7 +69,7 @@ function put(path, query, cb) {
     .put(api + path)
     .query(extend({ auth_token: config.token }, query))
     .set('Content-Length', '0')
-    .timeout(10000)
+    .timeout(timeout)
     .end(handler(cb))
 }
 
