@@ -1,6 +1,26 @@
 {
   "name": "visual-ddns",
   "version": "0.1.0",
+  "description": "VisualDNS.net DDNS node.js client. Update NS entries based on your public IP",
+  "preferGlobal": true,
+  "engineStrict": true,
+  "repository": "h2non/node-visualdns-ddns",
+  "author": "Tomas Aparicio",
+  "licenses": "MIT",
+  "bin": {
+    "visual-ddns": "./bin/visual-ddns"
+  },
+  "engines": {
+    "node": ">= 0.8.0"
+  },
+  "keywords": [
+    "ddns",
+    "visualdns",
+    "dns",
+    "dynamic",
+    "home",
+    "server"
+  ],
   "dependencies": {
     "superagent": "~0.18.0",
     "yargs": "~1.2.5"

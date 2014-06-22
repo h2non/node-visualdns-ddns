@@ -1,4 +1,4 @@
-# node-visualdns-ddns
+# node-visual-ddns
 
 Dynamic DNS register for [VisualDNS.net](https://visualdns.net)
 
@@ -10,7 +10,7 @@ Ideally for home servers
 You must have previously installed [node.js](https://nodejs.org) 
 
 ```bash
-$ npm install -g visualdns-ddns
+$ npm install -g visual-ddns
 ```
 
 ## Usage
@@ -27,12 +27,12 @@ Create the config file
 
 Usage
 ```
-$ vddns -c config.json
+$ visual-ddns -c config.json
 ```
 
 Scheudle it in crontab every 15 minutes
 ```bash
-*/15 * * * * vvdns -c /etc/vddns/config.json
+*/15 * * * * visual-ddns -c /etc/visual-ddns/config.json >> /var/log/visual-ddns.log
 ```
 
 ## License
